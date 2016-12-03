@@ -45,8 +45,20 @@ class StreamingTriangles(size_edges: Int, size_wedges: Int) {
     }
   }
   
+  private def is_wedge(e1: Tuple2[Int, Int], e2: Tuple2[Int, Int]): Boolean = {
+    return (e1._1 == e2._2) || (e1._2 == e2._1) || (e1._1 == e2._1) || (e1._2 == e2._2)
+  }
+  
   private def get_tot_wedges():Int = {
-    return 12
+    var n_wedges = 0
+    for (i <- 0 to size_edges) {
+      for (j <- i to size_edges) {
+        if (is_wedge(edge_res(i), edge_res(j))) {
+          n_wedges = n_wedges + 1
+        }
+      }
+    }
+    return n_wedges
   }
   
   private def get_new_wedges(new_edge: Tuple2[Int, Int]):Array[Tuple3[Int, Int, Int]] = {
