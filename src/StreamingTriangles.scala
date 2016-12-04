@@ -1,3 +1,5 @@
+import scala.io.Source
+import scala.math.pow
 
 class StreamingTriangles(size_edges: Int, size_wedges: Int) {
   
@@ -5,6 +7,7 @@ class StreamingTriangles(size_edges: Int, size_wedges: Int) {
   var wedge_res = new Array[(Int, Int, Int)](size_wedges)
   var is_closed = new Array[Boolean](size_wedges)
   var updated_edge_res = false
+  var iter = 0
   
   private def closes(wedge: (Int, Int, Int), edge: (Int, Int)):Boolean = {
     return (wedge._1 == edge._1 && wedge._3 == edge._2) || (wedge._1 == edge._2 && wedge._3 == edge._1)
@@ -64,7 +67,7 @@ class StreamingTriangles(size_edges: Int, size_wedges: Int) {
   }
   
   private def get_new_wedges(new_edge: Tuple2[Int, Int]): Array[Tuple3[Int, Int, Int]] = {
-    edges_res.filter(e => is_wedge(e, new_edge))
+    edge_res.filter(e => is_wedge(e, new_edge))
       .map(e => Set(e._1, e._2, new_edge._1, new_edge._2).toSeq)
       .map(x => (x.apply(0), x.apply(1), x.apply(2))).toArray 
   }
@@ -79,11 +82,25 @@ class StreamingTriangles(size_edges: Int, size_wedges: Int) {
     return edges.toStream
   }
   
-  def execute(new_edge: (Int, Int), iter: Int) = {
+  private def update(new_edge: (Int, Int)) = {
     update_closed(new_edge)
     update_edges_res(iter, new_edge)
     if (updated_edge_res) {
       update_wedges_res(new_edge)
+    }
+    iter = iter + 1
+  }
+  
+  def execute(new_edge: (Int, Int)):Unit = {
+    update(new_edge)
+    val ro = is_closed.filter(_ == true).size / is_closed.size
+    val transitivity = 3 * ro
+    val triangles = (ro*pow(iter,2)/size_edges*(size_edges - 1))*get_tot_wedges()
+    
+    if (iter%100 == 0) {
+      println("Iteration " + iter)
+      println("Transitivity: " + transitivity)
+      println("Triangles: " + triangles)
     }
   }
 }
