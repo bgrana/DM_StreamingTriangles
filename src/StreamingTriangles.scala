@@ -14,8 +14,7 @@ class StreamingTriangles(size_edges: Int, size_wedges: Int) {
     val s1 = Set(wedge._1._1, wedge._1._2)
     val s2 = Set(wedge._2._1, wedge._2._2)
     val s_new = Set(edge._1, edge._2)
-    
-    return s1.union(s2).union(s_new).size == 3 && !s1.equals(edge) && !s2.equals(edge)
+    return s1.union(s2).union(s_new).size == 3 && !s1.equals(s_new) && !s2.equals(s_new)
   }
   
   private def update_closed(new_edge: (Int, Int)):Unit = {
@@ -31,7 +30,7 @@ class StreamingTriangles(size_edges: Int, size_wedges: Int) {
     val new_wedges = get_new_wedges(new_edge)
 
     if (tot_wedges != 0) {
-      for (i <- 0 to size_edges-1) {
+      for (i <- 0 to size_wedges-1) {
         val r = scala.util.Random.nextFloat()
         if (r <= size_new_wedges.toDouble/tot_wedges.toDouble) {
           val rand_index = scala.util.Random.nextInt(new_wedges.size)
@@ -107,10 +106,9 @@ class StreamingTriangles(size_edges: Int, size_wedges: Int) {
     update(new_edge)
     val ro = is_closed.filter(_ == true).size.toDouble / is_closed.size.toDouble
     val transitivity = 3 * ro
-    val triangles = (ro*pow(iter,2)/size_edges*(size_edges - 1))*get_tot_wedges(new_edge)._1
+    val triangles = (ro*pow(iter,2)/(size_edges*(size_edges - 1)))*get_tot_wedges(new_edge)._1
     
-    if (iter%20 == 0) {
-//      wedge_res.foreach(print)
+    if (iter%10 == 0) {
       println("Iteration " + iter)
       println("Transitivity: " + transitivity)
       println("Triangles: " + triangles)
