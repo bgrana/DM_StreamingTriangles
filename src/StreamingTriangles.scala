@@ -4,17 +4,21 @@ import scala.math.pow
 class StreamingTriangles(size_edges: Int, size_wedges: Int) {
   
   var edge_res = new Array[(Int, Int)](size_edges)
-  var wedge_res = new Array[(Int, Int, Int)](size_wedges)
+  var wedge_res = new Array[((Int, Int), (Int, Int))](size_wedges)
   var is_closed = new Array[Boolean](size_wedges)
   var updated_edge_res = false
   var iter = 0
   
-  private def closes(wedge: (Int, Int, Int), edge: (Int, Int)):Boolean = {
-    return (wedge._1 == edge._1 && wedge._3 == edge._2) || (wedge._1 == edge._2 && wedge._3 == edge._1)
+  private def closes(wedge: ((Int, Int), (Int, Int)), edge: (Int, Int)):Boolean = {
+    val s1 = Set(wedge._1)
+    val s2 = Set(wedge._2)
+    val s_new = Set(edge)
+    
+    return s1.union(s2).union(s_new).size == 3 && !s1.equals(edge) && !s2.equals(edge)
   }
   
   private def update_closed(new_edge: (Int, Int)):Unit = {
-    for (i <- 0 to size_wedges) {
+    for (i <- 0 to size_wedges-1) {
       if (closes(wedge_res(i), new_edge)) {
         is_closed(i) = true
       }
@@ -27,7 +31,7 @@ class StreamingTriangles(size_edges: Int, size_wedges: Int) {
     val new_wedges = get_new_wedges(new_edge)
     val size_new_wedges = new_wedges.length
     
-    for (i <- 0 to size_edges) {
+    for (i <- 0 to size_edges-1) {
       if (x < 1/size_new_wedges/tot_wedges) {
         val rand_index = scala.util.Random.nextInt(size_new_wedges)
         wedge_res(i) = new_wedges(rand_index)
@@ -40,7 +44,7 @@ class StreamingTriangles(size_edges: Int, size_wedges: Int) {
     val r = scala.util.Random.nextFloat()
     updated_edge_res = false
 
-    for (i <- 0 to size_edges) {
+    for (i <- 0 to size_edges-1) {
       if (r < 1/iter) {
         edge_res(i) = new_edge
         updated_edge_res = true
@@ -51,13 +55,13 @@ class StreamingTriangles(size_edges: Int, size_wedges: Int) {
   private def is_wedge(e1: (Int, Int), e2: (Int, Int)): Boolean = {
     val s1 = Set(e1)
     val s2 = Set(e2)
-    return s1.intersect(s2).size > 0 && ! s1.equals(s2)
+    return s1.intersect(s2).size > 0 && !s1.equals(s2)
   }
   
   private def get_tot_wedges():Int = {
     var n_wedges = 0
-    for (i <- 0 to size_edges) {
-      for (j <- i to size_edges) {
+    for (i <- 0 to size_edges-1) {
+      for (j <- i to size_edges-1) {
         if (is_wedge(edge_res(i), edge_res(j))) {
           n_wedges = n_wedges + 1
         }
@@ -66,10 +70,9 @@ class StreamingTriangles(size_edges: Int, size_wedges: Int) {
     return n_wedges
   }
   
-  private def get_new_wedges(new_edge: Tuple2[Int, Int]): Array[Tuple3[Int, Int, Int]] = {
+  private def get_new_wedges(new_edge: (Int, Int)): Array[((Int, Int), (Int, Int))] = {
     edge_res.filter(e => is_wedge(e, new_edge))
-      .map(e => Set(e._1, e._2, new_edge._1, new_edge._2).toSeq)
-      .map(x => (x.apply(0), x.apply(1), x.apply(2))).toArray 
+      .map(x => ((x, new_edge)))
   }
 
   def getEdgeStream(fpath: String): Stream[(Int, Int)] = {
