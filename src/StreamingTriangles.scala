@@ -9,6 +9,7 @@ class StreamingTriangles(size_edges: Int, size_wedges: Int) {
   var updated_edge_res = false
   var iter = 1
   var wedge_res_empty = true
+  var tot_wedges = 0
   
   private def closes(wedge: ((Int, Int), (Int, Int)), edge: (Int, Int)):Boolean = {
     val s1 = Set(wedge._1._1, wedge._1._2)
@@ -72,6 +73,7 @@ class StreamingTriangles(size_edges: Int, size_wedges: Int) {
         }
       }
     }
+    tot_wedges = all_wedges
     return (all_wedges, new_wedges)
   }
   
@@ -106,7 +108,7 @@ class StreamingTriangles(size_edges: Int, size_wedges: Int) {
     update(new_edge)
     val ro = is_closed.filter(_ == true).size.toDouble / is_closed.size.toDouble
     val transitivity = 3 * ro
-    val triangles = (ro*pow(iter,2)/(size_edges*(size_edges - 1)))*get_tot_wedges(new_edge)._1
+    val triangles = (ro*pow(iter,2)/(size_edges*(size_edges - 1)))*tot_wedges
     
     if (iter%10 == 0) {
       println("Iteration " + iter)
