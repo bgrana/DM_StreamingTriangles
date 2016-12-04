@@ -48,7 +48,7 @@ class StreamingTriangles(size_edges: Int, size_wedges: Int) {
   private def is_wedge(e1: (Int, Int), e2: (Int, Int)): Boolean = {
     val s1 = Set(e1)
     val s2 = Set(e2)
-    return s1.intersect(s2).size > 0 && s1.equals(s2)
+    return s1.intersect(s2).size > 0 && ! s1.equals(s2)
   }
   
   private def get_tot_wedges():Int = {
@@ -63,8 +63,20 @@ class StreamingTriangles(size_edges: Int, size_wedges: Int) {
     return n_wedges
   }
   
-  private def get_new_wedges(new_edge: Tuple2[Int, Int]):Array[Tuple3[Int, Int, Int]] = {
-    return wedge_res // TODO this is only a placeholder value
+  private def get_new_wedges(new_edge: Tuple2[Int, Int]): Array[Tuple3[Int, Int, Int]] = {
+    edges_res.filter(e => is_wedge(e, new_edge))
+      .map(e => Set(e._1, e._2, new_edge._1, new_edge._2).toSeq)
+      .map(x => (x.apply(0), x.apply(1), x.apply(2))).toArray 
+  }
+
+  def getEdgeStream(fpath: String): Stream[(Int, Int)] = {
+    // Read file
+    val content = Source.fromFile(fpath).mkString
+    val edges = content.split("\n")
+          .filter(s => s.split(" ").length == 2)
+          .map(s => (s.split(" ").apply(0).toInt, s.split(" ").apply(1).toInt))
+          .map(t => (t._1.max(t._2), t._1.min(t._2)))
+    return edges.toStream
   }
   
   def execute(new_edge: (Int, Int), iter: Int) = {
