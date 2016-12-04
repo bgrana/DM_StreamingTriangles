@@ -45,8 +45,10 @@ class StreamingTriangles(size_edges: Int, size_wedges: Int) {
     }
   }
   
-  private def is_wedge(e1: Tuple2[Int, Int], e2: Tuple2[Int, Int]): Boolean = {
-    return (e1._1 == e2._2) || (e1._2 == e2._1) || (e1._1 == e2._1) || (e1._2 == e2._2)
+  private def is_wedge(e1: (Int, Int), e2: (Int, Int)): Boolean = {
+    val s1 = Set(e1)
+    val s2 = Set(e2)
+    return s1.intersect(s2).size > 0 && s1.equals(s2)
   }
   
   private def get_tot_wedges():Int = {
